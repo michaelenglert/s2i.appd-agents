@@ -1,0 +1,10 @@
+#!/bin/bash -e
+#
+# S2I run script for the 'appd-agents' image.
+# The run script executes the server that runs your application.
+#
+# For more information see the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+export JAVA_OPTS="$JAVA_OPTS -javaagent:/opt/app-agent/javaagent.jar -Dappdynamics.agent.reuse.nodeName.prefix=$APPDYNAMICS_AGENT_TIER_NAME -Dappdynamics.agent.reuse.nodeName=true -Dappdynamics.force.default.ssl.certificate.validation=false"

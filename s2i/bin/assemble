@@ -1,0 +1,32 @@
+#!/bin/bash -e
+#
+# S2I assemble script for the 'appd-agents' image.
+# The 'assemble' script builds your application source so that it is ready to run.
+#
+# For more information refer to the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+# If the 'appd-agents' assemble script is executed with the '-h' flag, print the usage.
+if [[ "$1" == "-h" ]]; then
+	exec /usr/libexec/s2i/usage
+fi
+
+# Restore artifacts from the previous build (if they exist).
+#
+if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
+  echo "---> Restoring build artifacts..."
+  mv /tmp/artifacts/. ./
+fi
+
+echo "---> Installing application source..."
+cp -Rf /tmp/src/. ./
+
+echo "---> Building application from source..."
+# TODO: Add build steps for your application, eg npm install, bundle install, pip install, etc.
+
+echo "---> Preparing AppDynamics Java Agent..."
+curl -L -o /app-agent.zip -b /cookies.txt https://packages.appdynamics.com/java/$APPDYNAMICS_AGENT_VERSION/AppServerAgent-$APPDYNAMICS_AGENT_VERSION.zip
+unzip /app-agent.zip -d /opt/app-agent/
+sed -i -e "/<\!-- property name=\"config-poll-interval\"/c\<property name=\"appdynamics.jvm.shutdown.mark.node.as.historical\" value=\"true\" \/>" /opt/app-agent/ver*/conf/app-agent-config.xml
+rm -rf /app-agent.zip
